@@ -8,7 +8,7 @@ export const options = {
 
 export default function () {
   try {
-    const res = http.get('http://localhost:3000');
+    const res = http.get('http://localhost:3000/admin/all');
 
     const isSuccess = check(res, {
       'status is 200': (r) => r.status === 200,
