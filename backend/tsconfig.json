@@ -11,6 +11,9 @@
     "types": [],
     "allowJs": true,
     "checkJs": false,
+    "outDir": "dist",
+    "rootDir": "./",
+    "noEmit": false,
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
