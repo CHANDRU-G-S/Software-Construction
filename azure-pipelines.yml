@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  name: 'Default' 
+  name: 'Default'
 
 steps:
 - task: UseNode@1
@@ -12,19 +12,32 @@ steps:
 
 - powershell: |
     cd backend
-    Write-Host "Installing dependencies..."
     npm install
-  displayName: 'npm install'
+    # Check if k6 is installed on your PC, if not, install it
+    if (!(Get-Command k6 -ErrorAction SilentlyContinue)) {
+       Write-Host "k6 not found. Installing..."
+       winget install k6 --accept-source-agreements --accept-package-agreements
+    }
+  displayName: 'Prepare Environment'
 
 - powershell: |
     cd backend
     
-    # 1. Kill any old node processes so Port 3000 is free
+    # 1. Kill any ghost node processes from previous runs
     Stop-Process -Name "node" -Force -ErrorAction SilentlyContinue
     
-    Write-Host "--- STARTING SERVER ---"
-    Write-Host "Running node server.js from: $(Get-Location)"
+    Write-Host "Starting Server in the background..."
+    # 2. Launch server.js (since you don't have a dist folder)
+    $server = Start-Process node -ArgumentList "server.js" -PassThru -WindowStyle Hidden
     
-    # 2. Run the file directly from the backend folder
-    node server.js
-  displayName: 'Run Server'
+    # 3. Give the Database 10 seconds to connect
+    Start-Sleep -Seconds 10
+    
+    Write-Host "--- STARTING LOAD TEST ---"
+    # 4. Run the k6 test
+    k6 run load_test.js
+    
+    Write-Host "--- CLEANING UP ---"
+    # 5. Shut down the server so the pipeline can finish
+    Stop-Process -Id $server.Id -Force
+  displayName: 'Start Server, Run Load Test, and Stop'
