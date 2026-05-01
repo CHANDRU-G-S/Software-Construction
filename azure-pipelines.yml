@@ -18,5 +18,5 @@ steps:
 - script: |
     npm install
     npm run build
-    workingDirectory: 'backend'
+  workingDirectory: 'backend'
   displayName: 'npm install and build'
