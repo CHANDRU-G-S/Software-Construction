@@ -1,16 +1,14 @@
-# Node.js
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
 - main
 
+# 1. We change this to use YOUR computer instead of Microsoft's
 pool:
-  vmImage: ubuntu-latest
+  name: 'Default' 
 
 steps:
-- task: UseNode@1  # Updated from NodeTool@0
+# We don't need UseNode@1 if you already have Node installed on your PC, 
+# but it doesn't hurt to keep it.
+- task: UseNode@1
   inputs:
     version: '20.x'
   displayName: 'Install Node.js'
@@ -19,4 +17,11 @@ steps:
     cd backend
     npm install
     npm run build
-  displayName: 'npm install and ild'
+  displayName: 'npm install and build'
+
+# 2. This is the new part that starts your server and keeps it alive
+- script: |
+    cd backend
+    echo "Starting Server on your local machine..."
+    node dist/server.js
+  displayName: 'Run Server and Stay Alive'
