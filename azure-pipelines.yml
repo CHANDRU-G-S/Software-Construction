@@ -1,47 +1,36 @@
 trigger:
 - main
 
-# Uses your local computer instead of a cloud VM
 pool:
   name: 'Default' 
 
 variables:
-  # Adjust this if your port is different (e.g., 5000 or 8080)
+  # Change this if your app uses a different port
   PORT: 3000
 
 steps:
-# 1. Ensure Node.js is available
 - task: UseNode@1
   inputs:
     version: '20.x'
   displayName: 'Install Node.js'
 
-# 2. Build the project
-- powershell: |
+- script: |
     cd backend
-    Write-Host "Installing dependencies..."
     npm install
-    Write-Host "Building TypeScript..."
     npm run build
-  displayName: 'npm install and build'
+  displayName: 'Install and Build'
 
-# 3. Start the server and KEEP IT OPEN
-- powershell: |
+- script: |
     cd backend
-    Write-Host "Starting Server on http://localhost:$(PORT)..."
+    echo "--- CHECKING FILES ---"
+    dir
+    echo "--- CHECKING DIST FOLDER ---"
+    dir dist || echo "Dist folder not found!"
     
-    # Start node as a background process within this session
-    $nodeProcess = Start-Process node -ArgumentList "dist/server.js" -PassThru -WindowStyle Hidden
+    echo "--- STARTING SERVER ---"
+    echo "If this works, the pipeline will stay 'In Progress' until you cancel it."
     
-    Write-Host "Server started with PID: $($nodeProcess.Id)"
-    Write-Host "The pipeline will now stay active so you can visit the site."
-    Write-Host "Navigate to http://localhost:$(PORT) in your browser."
-    Write-Host "CLICK 'CANCEL' IN AZURE DEVOPS TO STOP THE SERVER WHEN FINISHED."
-
-    # Infinite loop to keep the pipeline 'In Progress'
-    while($true) {
-        Start-Sleep -Seconds 60
-        Write-Host "Server is still running... $(Get-Date)"
-    }
-  displayName: 'Run Server (Manual Stay-Alive)'
-  workingDirectory: '$(Build.SourcesDirectory)/backend'
+    # We run this directly. If it crashes, the error will show here.
+    # Change 'dist/server.js' to 'server.js' if you aren't using TypeScript/Dist.
+    node dist/server.js
+  displayName: 'Run Server (Visible Mode)'
