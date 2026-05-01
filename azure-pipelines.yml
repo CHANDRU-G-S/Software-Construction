@@ -8,15 +8,19 @@ steps:
 - script: |
     cd backend
     npm install
-    npm run build
-  displayName: '1. Build (Creates dist folder)'
+    # Install ts-node locally so we can run .ts files directly
+    npm install ts-node typescript --save-dev
+  displayName: 'Install Dependencies'
 
-- script: |
+- powershell: |
     cd backend
-    echo "--- Checking if dist exists ---"
-    dir dist
     
-    echo "--- Starting Server ---"
-    # Using the path relative to the 'backend' folder
-    node dist/server.js
-  displayName: '2. Run Server'
+    # 1. Kill any old node processes to free up port 3000
+    Stop-Process -Name "node" -Force -ErrorAction SilentlyContinue
+    
+    Write-Host "--- STARTING SERVER ---"
+    
+    # 2. Try to run with ts-node if you are using TypeScript
+    # If your main file is actually 'index.ts' or 'app.ts', change the name here:
+    npx ts-node server.ts
+  displayName: 'Run Server (Direct Mode)'
