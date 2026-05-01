@@ -4,33 +4,19 @@ trigger:
 pool:
   name: 'Default' 
 
-variables:
-  # Change this if your app uses a different port
-  PORT: 3000
-
 steps:
-- task: UseNode@1
-  inputs:
-    version: '20.x'
-  displayName: 'Install Node.js'
-
 - script: |
     cd backend
     npm install
     npm run build
-  displayName: 'Install and Build'
+  displayName: '1. Build (Creates dist folder)'
 
 - script: |
     cd backend
-    echo "--- CHECKING FILES ---"
-    dir
-    echo "--- CHECKING DIST FOLDER ---"
-    dir dist || echo "Dist folder not found!"
+    echo "--- Checking if dist exists ---"
+    dir dist
     
-    echo "--- STARTING SERVER ---"
-    echo "If this works, the pipeline will stay 'In Progress' until you cancel it."
-    
-    # We run this directly. If it crashes, the error will show here.
-    # Change 'dist/server.js' to 'server.js' if you aren't using TypeScript/Dist.
+    echo "--- Starting Server ---"
+    # Using the path relative to the 'backend' folder
     node dist/server.js
-  displayName: 'Run Server (Visible Mode)'
+  displayName: '2. Run Server'
