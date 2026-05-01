@@ -5,22 +5,26 @@ pool:
   name: 'Default' 
 
 steps:
-- script: |
+- task: UseNode@1
+  inputs:
+    version: '20.x'
+  displayName: 'Install Node.js'
+
+- powershell: |
     cd backend
+    Write-Host "Installing dependencies..."
     npm install
-    # Install ts-node locally so we can run .ts files directly
-    npm install ts-node typescript --save-dev
-  displayName: 'Install Dependencies'
+  displayName: 'npm install'
 
 - powershell: |
     cd backend
     
-    # 1. Kill any old node processes to free up port 3000
+    # 1. Kill any old node processes so Port 3000 is free
     Stop-Process -Name "node" -Force -ErrorAction SilentlyContinue
     
     Write-Host "--- STARTING SERVER ---"
+    Write-Host "Running node server.js from: $(Get-Location)"
     
-    # 2. Try to run with ts-node if you are using TypeScript
-    # If your main file is actually 'index.ts' or 'app.ts', change the name here:
-    npx ts-node server.ts
-  displayName: 'Run Server (Direct Mode)'
+    # 2. Run the file directly from the backend folder
+    node server.js
+  displayName: 'Run Server'
